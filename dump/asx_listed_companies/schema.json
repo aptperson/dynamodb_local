@@ -1,0 +1,29 @@
+{
+  "Table": {
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "date",
+        "AttributeType": "S"
+      }
+    ],
+    "TableName": "asx_listed_companies",
+    "KeySchema": [
+      {
+        "AttributeName": "date",
+        "KeyType": "HASH"
+      }
+    ],
+    "TableStatus": "ACTIVE",
+    "CreationDateTime": 1598505676.426,
+    "ProvisionedThroughput": {
+      "LastIncreaseDateTime": 0.0,
+      "LastDecreaseDateTime": 0.0,
+      "NumberOfDecreasesToday": 0,
+      "ReadCapacityUnits": 1,
+      "WriteCapacityUnits": 1
+    },
+    "TableSizeBytes": 5785277,
+    "ItemCount": 27,
+    "TableArn": "arn:aws:dynamodb:ddblocal:000000000000:table/asx_listed_companies"
+  }
+}
