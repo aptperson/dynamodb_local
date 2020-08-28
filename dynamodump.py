@@ -356,8 +356,14 @@ def delete_table(conn, sleep_interval, table_name):
             # delete table if exists
             table_exist = True
             try:
-                conn.delete_table(table_name)
-            except boto.exception.JSONResponseError as e:
+                conn.delete_table(TableName=table_name)
+            except Exception as e:
+                #  boto.exception.JSONResponseError as e:
+                # import pdb; pdb.set_trace()
+                if repr(e) == "ResourceNotFoundException('An error occurred (ResourceNotFoundException) when calling the DeleteTable operation: Cannot do operations on a non-existent table')":
+                    table_exist = False
+                    logging.info(table_name + " table deleted!")
+                    break
                 if e.body["__type"] == "com.amazonaws.dynamodb.v20120810#ResourceNotFoundException":
                     table_exist = False
                     logging.info(table_name + " table deleted!")
@@ -441,9 +447,9 @@ def wait_for_active_table(conn, table_name, verb):
     """
 
     while True:
-        if conn.describe_table(table_name)["Table"]["TableStatus"] != "ACTIVE":
+        if conn.describe_table(TableName=table_name)["Table"]["TableStatus"] != "ACTIVE":
             logging.info("Waiting for " + table_name + " table to be " + verb + ".. [" +
-                         conn.describe_table(table_name)["Table"]["TableStatus"] + "]")
+                         conn.describe_table(TableName=table_name)["Table"]["TableStatus"] + "]")
             time.sleep(sleep_interval)
         else:
             logging.info(table_name + " " + verb + ".")
@@ -664,6 +670,7 @@ def do_restore(dynamo, sleep_interval, source_table, destination_table, write_ca
     table_provisioned_throughput = {"ReadCapacityUnits": int(original_read_capacity),
                                     "WriteCapacityUnits": int(write_capacity)}
 
+    print(table)
     if not args.dataOnly:
 
         logging.info("Creating " + destination_table + " table with temp write capacity of " +
@@ -671,10 +678,14 @@ def do_restore(dynamo, sleep_interval, source_table, destination_table, write_ca
 
         while True:
             try:
-                dynamo.create_table(table_attribute_definitions, table_table_name, table_key_schema,
-                                    table_provisioned_throughput, table_local_secondary_indexes,
-                                    table_global_secondary_indexes)
-                break
+                if (table_global_secondary_indexes is not None) or (table_local_secondary_indexes is not None):
+                    print('###### not implemented yet')
+                else:
+                    dynamo.create_table(AttributeDefinitions = table_attribute_definitions,
+                        TableName=table_table_name,
+                        KeySchema=table_key_schema,
+                        ProvisionedThroughput=table_provisioned_throughput)
+                    break
             except boto.exception.JSONResponseError as e:
                 if e.body["__type"] == "com.amazonaws.dynamodb.v20120810#LimitExceededException":
                     logging.info("Limit exceeded, retrying creation of " + destination_table + "..")
@@ -868,11 +879,7 @@ def main():
 
     # instantiate connection
     if args.region == LOCAL_REGION:
-        conn = boto.dynamodb2.layer1.DynamoDBConnection(aws_access_key_id=args.accessKey,
-                                                        aws_secret_access_key=args.secretKey,
-                                                        host=args.host,
-                                                        port=int(args.port),
-                                                        is_secure=False)
+        conn = boto3.client('dynamodb', endpoint_url='http://localhost:8000')
         sleep_interval = LOCAL_SLEEP_INTERVAL
     else:
         if not args.profile:
