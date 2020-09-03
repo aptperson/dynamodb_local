@@ -492,7 +492,7 @@ def do_empty(dynamo, table_name):
 
     # get table schema
     logging.info("Fetching table schema for " + table_name)
-    table_data = dynamo.describe_table(table_name)
+    table_data = dynamo.describe_table(TableName=table_name)
 
     table_desc = table_data["Table"]
     table_attribute_definitions = table_desc["AttributeDefinitions"]
@@ -513,9 +513,13 @@ def do_empty(dynamo, table_name):
 
     while True:
         try:
-            dynamo.create_table(table_attribute_definitions, table_name, table_key_schema,
-                                table_provisioned_throughput, table_local_secondary_indexes,
-                                table_global_secondary_indexes)
+            if (table_global_secondary_indexes is not None) or (table_local_secondary_indexes is not None):
+                print('###### not implemented yet')
+            else:
+                dynamo.create_table(AttributeDefinitions = table_attribute_definitions,
+                    TableName=table_name,
+                    KeySchema=table_key_schema,
+                    ProvisionedThroughput=table_provisioned_throughput)
             break
         except boto.exception.JSONResponseError as e:
             if e.body["__type"] == "com.amazonaws.dynamodb.v20120810#LimitExceededException":

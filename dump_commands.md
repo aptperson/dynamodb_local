@@ -24,3 +24,21 @@ python dynamodump.py -m restore -r local -s asx_splits --schemaOnly
 python dynamodump.py -m backup -r ap-southeast-2 -s asx_trade_universe --schemaOnly
 
 python dynamodump.py -m restore -r local -s asx_trade_universe --schemaOnly
+
+
+## schema for asx_trade_open_prices
+python dynamodump.py -m backup -r ap-southeast-2 -s asx_trade_open_prices --schemaOnly
+
+python dynamodump.py -m restore -r local -s asx_trade_open_prices --schemaOnly
+
+
+## schema for asx_position_pnl
+python dynamodump.py -m backup -r ap-southeast-2 -s asx_position_pnl --schemaOnly
+
+# this command will empty the table and restore
+python dynamodump.py -m restore -r local -s asx_position_pnl --schemaOnly
+
+
+<!-- python dynamodump.py -m empty -r local -s asx_position_pnl -->
+
+
